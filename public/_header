@@ -1,0 +1,9 @@
+/*
+  Content-Security-Policy: 
+    default-src 'self';
+    script-src 'self' 'unsafe-inline' 'unsafe-eval';
+    style-src 'self' 'unsafe-inline';
+    img-src * data:;
+    font-src 'self' data:;
+    connect-src *;
+    frame-src *;
