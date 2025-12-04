@@ -1,0 +1,135 @@
+<%- include('../partials/header') %>
+
+<div class="admin-layout">
+  <%- include('sidebar') %>
+  
+  <div class="admin-content">
+    <h1>Gerenciar Reservas</h1>
+    
+    <div class="table-container">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Hóspede</th>
+            <th>Quarto</th>
+            <th>Check-in</th>
+            <th>Check-out</th>
+            <th>Valor</th>
+            <th>Status</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% if (reservas.length === 0) { %>
+            <tr>
+              <td colspan="8" class="text-center">Nenhuma reserva encontrada</td>
+            </tr>
+          <% } else { %>
+            <% reservas.forEach(reserva => { %>
+              <tr>
+                <td><%= reserva._id.toString().slice(0, 8) %></td>
+                <td><%= reserva.hospede ? reserva.hospede.nome : 'N/A' %></td>
+                <td>Quarto <%= reserva.quarto ? reserva.quarto.numero : 'N/A' %></td>
+                <td><%= new Date(reserva.checkIn).toLocaleDateString('pt-BR') %></td>
+                <td><%= new Date(reserva.checkOut).toLocaleDateString('pt-BR') %></td>
+                <td>R$ <%= reserva.total %></td>
+                <td>
+                  <form action="/admin/reservas/<%= reserva._id %>/status" method="POST" style="display:inline;">
+                    <select name="status" onchange="this.form.submit()" class="select-inline">
+                      <option value="Pendente" <%= reserva.status === 'Pendente' ? 'selected' : '' %>>Pendente</option>
+                      <option value="Confirmada" <%= reserva.status === 'Confirmada' ? 'selected' : '' %>>Confirmada</option>
+                      <option value="Cancelada" <%= reserva.status === 'Cancelada' ? 'selected' : '' %>>Cancelada</option>
+                      <option value="Finalizada" <%= reserva.status === 'Finalizada' ? 'selected' : '' %>>Finalizada</option>
+                    </select>
+                  </form>
+                </td>
+                <td class="acoes">
+                  <button class="btn-icon" onclick="verDetalhes('<%= reserva._id %>')">
+                    <i class="fas fa-eye"></i>
+                  </button>
+                  <form action="/admin/reservas/<%= reserva._id %>/deletar" method="POST" style="display:inline;" onsubmit="return confirm('Tem certeza?')">
+                    <button type="submit" class="btn-icon btn-danger">
+                      <i class="fas fa-trash"></i>
+                    </button>
+                  </form>
+                </td>
+              </tr>
+            <% }) %>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Detalhes -->
+<div id="modalDetalhes" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>Detalhes da Reserva</h3>
+      <button class="modal-close" onclick="fecharModal()">&times;</button>
+    </div>
+    <div id="detalhesContent" class="detalhes-content"></div>
+  </div>
+</div>
+
+<script>
+  const reservas = <%- JSON.stringify(reservas) %>;
+  
+  function verDetalhes(_id) {
+    const reserva = reservas.find(r => r._id === _id);
+    if (!reserva) return;
+    
+    const content = `
+      <div class="detalhe-item">
+        <strong>Hóspede:</strong>
+        <p>${reserva.hospede ? reserva.hospede.nome : 'N/A'}</p>
+      </div>
+      <div class="detalhe-item">
+        <strong>Quarto:</strong>
+        <p>Quarto ${reserva.quarto ? reserva.quarto.numero : 'N/A'}</p>
+      </div>
+      <div class="detalhe-item">
+        <strong>Check-in:</strong>
+        <p>${new Date(reserva.checkIn).toLocaleDateString('pt-BR')}</p>
+      </div>
+      <div class="detalhe-item">
+        <strong>Check-out:</strong>
+        <p>${new Date(reserva.checkOut).toLocaleDateString('pt-BR')}</p>
+      </div>
+      <div class="detalhe-item">
+        <strong>Número de Hóspedes:</strong>
+        <p>${reserva.numeroHospedes} pessoa(s)</p>
+      </div>
+      <div class="detalhe-item">
+        <strong>Valor Total:</strong>
+        <p class="text-large">R$ ${reserva.total}</p>
+      </div>
+      <div class="detalhe-item">
+        <strong>Status:</strong>
+        <p><span class="badge">${reserva.status}</span></p>
+      </div>
+      <div class="detalhe-item">
+        <strong>Data de Criação:</strong>
+        <p>${new Date(reserva.createdAt).toLocaleString('pt-BR')}</p>
+      </div>
+    `;
+    
+    document.getElementById('detalhesContent').innerHTML = content;
+    document.getElementById('modalDetalhes').style.display = 'flex';
+  }
+  
+  function fecharModal() {
+    document.getElementById('modalDetalhes').style.display = 'none';
+  }
+  
+  window.onclick = function(event) {
+    const modal = document.getElementById('modalDetalhes');
+    if (event.target === modal) {
+      fecharModal();
+    }
+  }
+</script>
+
+<%- include('../partials/footer') %>

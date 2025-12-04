@@ -1,0 +1,71 @@
+<%- include('../partials/header') %>
+
+<div class="quartos-page">
+  <div class="container">
+    <h1>Nossos Quartos</h1>
+    
+    <div class="filtros">
+      <a href="/quartos?tipo=Todos" class="btn-filter <%= filtroAtual === 'Todos' ? 'active' : '' %>">Todos</a>
+      <a href="/quartos?tipo=Simples" class="btn-filter <%= filtroAtual === 'Simples' ? 'active' : '' %>">Simples</a>
+      <a href="/quartos?tipo=Duplo" class="btn-filter <%= filtroAtual === 'Duplo' ? 'active' : '' %>">Duplo</a>
+      <a href="/quartos?tipo=Luxo" class="btn-filter <%= filtroAtual === 'Luxo' ? 'active' : '' %>">Luxo</a>
+      <a href="/quartos?tipo=Suíte" class="btn-filter <%= filtroAtual === 'Suíte' ? 'active' : '' %>">Suíte</a>
+
+       <form action="/quartos" method="GET" class="pesquisa-form">
+    <input 
+      type="text" 
+      name="search" 
+      placeholder="Pesquisar quarto..."
+      value="<%= typeof search !== 'undefined' ? search : '' %>"
+      class="input-search"
+    >
+    <button type="submit" class="btn-primary">Buscar</button>
+  </form>
+
+    </div>
+    
+    <div class="quartos-grid">
+      <% quartos.forEach(quarto => { %>
+        <div class="quarto-card">
+          <div class="quarto-image">
+            <img src="<%= quarto.imagem %>" alt="Quarto <%= quarto.numero %>">
+            <span class="badge-status badge-<%= quarto.status.toLowerCase().replace('í', 'i') %>">
+              <%= quarto.status %>
+            </span>
+          </div>
+          
+          <div class="quarto-content">
+            <h3>Quarto <%= quarto.numero %> - <%= quarto.tipo %></h3>
+            <p><%= quarto.descricao %></p>
+            
+            <div class="quarto-info">
+              <span><i class="fas fa-users"></i> <%= quarto.capacidade %> pessoas</span>
+              <span class="preco"><i class="fas fa-dollar-sign"></i> R$ <%= quarto.precoDiaria %>/noite</span>
+            </div>
+            
+            <div class="quarto-comodidades">
+              <% quarto.comodidades.forEach(comodidade => { %>
+                <span class="tag"><%= comodidade %></span>
+              <% }) %>
+            </div>
+            
+            <% if (quarto.status === 'Disponível') { %>
+              <a href="/reservas/nova/<%= quarto._id %>" class="btn-primary btn-block">Reservar Agora</a>
+            <% } else { %>
+              <button class="btn-disabled btn-block" disabled>Indisponível</button>
+            <% } %>
+          </div>
+        </div>
+      <% }) %>
+    </div>
+    
+    <% if (quartos.length === 0) { %>
+      <div class="empty-state">
+        <i class="fas fa-bed"></i>
+        <p>Nenhum quarto encontrado nesta categoria.</p>
+      </div>
+    <% } %>
+  </div>
+</div>
+
+<%- include('../partials/footer') %>

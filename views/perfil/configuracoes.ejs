@@ -1,0 +1,189 @@
+<%- include('../partials/header') %>
+
+<div class="perfil-page">
+  <div class="container">
+    <div class="perfil-header">
+      <div>
+        <h1><i class="fas fa-cog"></i> Configurações</h1>
+        <p>Gerencie suas configurações de conta e segurança</p>
+      </div>
+      <a href="/perfil" class="btn-outline">
+        <i class="fas fa-arrow-left"></i> Voltar ao Perfil
+      </a>
+    </div>
+    
+    <% if (error) { %>
+      <div class="alert alert-error">
+        <%= error %>
+      </div>
+    <% } %>
+    
+    <% if (success) { %>
+      <div class="alert alert-success">
+        <%= success %>
+      </div>
+    <% } %>
+    
+    <div class="config-grid">
+      <!-- Segurança -->
+      <div class="config-card">
+        <div class="config-header">
+          <h2><i class="fas fa-shield-alt"></i> Segurança</h2>
+          <p>Altere sua senha para manter sua conta segura</p>
+        </div>
+        
+        <form action="/perfil/mudar-senha" method="POST" class="config-form">
+          <div class="form-group">
+            <label for="senhaAtual">Senha Atual</label>
+            <input type="password" id="senhaAtual" name="senhaAtual" required placeholder="Digite sua senha atual">
+          </div>
+          
+          <div class="form-group">
+            <label for="novaSenha">Nova Senha</label>
+            <input type="password" id="novaSenha" name="novaSenha" required placeholder="Digite a nova senha (mínimo 6 caracteres)">
+          </div>
+          
+          <div class="form-group">
+            <label for="confirmarSenha">Confirmar Nova Senha</label>
+            <input type="password" id="confirmarSenha" name="confirmarSenha" required placeholder="Digite a nova senha novamente">
+          </div>
+          
+          <button type="submit" class="btn-primary">
+            <i class="fas fa-key"></i> Alterar Senha
+          </button>
+        </form>
+      </div>
+      
+      <!-- Informações da Conta -->
+      <div class="config-card">
+        <div class="config-header">
+          <h2><i class="fas fa-info-circle"></i> Informações da Conta</h2>
+          <p>Detalhes sobre sua conta</p>
+        </div>
+        
+        <div class="info-list">
+          <div class="info-list-item">
+            <div class="info-icon">
+              <i class="fas fa-envelope"></i>
+            </div>
+            <div>
+              <label>Email</label>
+              <p><%= user.email %></p>
+            </div>
+          </div>
+          
+          <div class="info-list-item">
+            <div class="info-icon">
+              <i class="fas fa-user-tag"></i>
+            </div>
+            <div>
+              <label>Tipo de Conta</label>
+              <p><%= user.tipo === 'admin' ? 'Administrador' : 'Cliente' %></p>
+            </div>
+          </div>
+          
+          <div class="info-list-item">
+            <div class="info-icon">
+              <i class="fas fa-calendar-plus"></i>
+            </div>
+            <div>
+              <label>Membro desde</label>
+              <p><%= new Date(user.dataCadastro).toLocaleDateString('pt-BR') %></p>
+            </div>
+          </div>
+          
+          <div class="info-list-item">
+            <div class="info-icon">
+              <i class="fas fa-fingerprint"></i>
+            </div>
+            <div>
+              <label>ID do Usuário</label>
+              <p><code><%= user.id %></code></p>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Preferências -->
+      <div class="config-card">
+        <div class="config-header">
+          <h2><i class="fas fa-sliders-h"></i> Preferências</h2>
+          <p>Personalize sua experiência</p>
+        </div>
+        
+        <div class="preferencias-info">
+          <p>Mais opções de personalização estarão disponíveis em breve!</p>
+          <ul>
+            <li><i class="fas fa-check"></i> Notificações por email</li>
+            <li><i class="fas fa-check"></i> Alertas de reserva</li>
+            <li><i class="fas fa-check"></i> Ofertas e promoções</li>
+          </ul>
+        </div>
+      </div>
+      
+      <!-- Ajuda e Suporte -->
+      <div class="config-card">
+        <div class="config-header">
+          <h2><i class="fas fa-life-ring"></i> Ajuda e Suporte</h2>
+          <p>Precisa de ajuda? Estamos aqui para você</p>
+        </div>
+        
+        <div class="suporte-links">
+          <a href="#" class="suporte-link">
+            <i class="fas fa-question-circle"></i>
+            <div>
+              <strong>Central de Ajuda</strong>
+              <p>Encontre respostas para suas dúvidas</p>
+            </div>
+          </a>
+          
+          <a href="#" class="suporte-link">
+            <i class="fas fa-headset"></i>
+            <div>
+              <strong>Fale Conosco</strong>
+              <p>Entre em contato com nosso suporte</p>
+            </div>
+          </a>
+          
+          <a href="#" class="suporte-link">
+            <i class="fas fa-file-alt"></i>
+            <div>
+              <strong>Termos de Uso</strong>
+              <p>Leia nossos termos e políticas</p>
+            </div>
+          </a>
+        </div>
+      </div>
+      
+      <!-- Zona de Perigo -->
+      <div class="config-card danger-zone">
+        <div class="config-header">
+          <h2><i class="fas fa-exclamation-triangle"></i> Zona de Perigo</h2>
+          <p>Ações irreversíveis</p>
+        </div>
+        
+        <div class="danger-content">
+          <p><strong>Desativar Conta</strong></p>
+          <p>Desative temporariamente sua conta. Você pode reativá-la fazendo login novamente.</p>
+          <button class="btn-danger" disabled>
+            <i class="fas fa-user-slash"></i> Desativar Conta
+          </button>
+          
+          <hr style="margin: 1.5rem 0; border: 1px solid #fee2e2;">
+          
+          <p><strong>Excluir Conta</strong></p>
+          <p>Exclua permanentemente sua conta e todos os dados associados. Esta ação não pode ser desfeita.</p>
+          <button class="btn-danger" disabled>
+            <i class="fas fa-trash-alt"></i> Excluir Conta Permanentemente
+          </button>
+          
+          <p style="margin-top: 1rem; font-size: 0.875rem; color: #6b7280;">
+            <em>Entre em contato com o suporte para realizar estas ações.</em>
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%- include('../partials/footer') %>

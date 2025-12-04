@@ -1,0 +1,169 @@
+<%- include('../partials/header') %>
+
+<div class="admin-layout">
+  <%- include('sidebar') %>
+  
+  <div class="admin-content">
+    <div class="content-header">
+      <h1>Gerenciar Quartos</h1>
+      <button class="btn-primary" onclick="abrirModal()">
+        <i class="fas fa-plus"></i> Novo Quarto
+      </button>
+    </div>
+    
+    <div class="table-container">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Número</th>
+            <th>Tipo</th>
+            <th>Capacidade</th>
+            <th>Diária</th>
+            <th>Status</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% if (quartos.length === 0) { %>
+            <tr>
+              <td colspan="6" class="text-center">Nenhum quarto cadastrado</td>
+            </tr>
+          <% } else { %>
+            <% quartos.forEach(quarto => { %>
+              <tr>
+                <td><%= quarto.numero %></td>
+                <td><%= quarto.tipo %></td>
+                <td><%= quarto.capacidade %> pessoas</td>
+                <td>R$ <%= quarto.precoDiaria %></td>
+                <td>
+                  <span class="badge badge-<%= quarto.status.toLowerCase().replace('í', 'i') %>">
+                    <%= quarto.status %>
+                  </span>
+                </td>
+                <td class="acoes">
+                  <button class="btn-icon" onclick="editarQuarto('<%= quarto._id %>')">
+                    <i class="fas fa-edit"></i>
+                  </button>
+                  <form action="/admin/quartos/<%= quarto._id %>/deletar" method="POST" style="display:inline;" onsubmit="return confirm('Tem certeza?')">
+                    <button type="submit" class="btn-icon btn-danger">
+                      <i class="fas fa-trash"></i>
+                    </button>
+                  </form>
+                </td>
+              </tr>
+            <% }) %>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Modal -->
+<div id="modalQuarto" class="modal">
+  <div class="modal-content modal-large">
+    <div class="modal-header">
+      <h3 id="modalTitle">Novo Quarto</h3>
+      <button class="modal-close" onclick="fecharModal()">&times;</button>
+    </div>
+    <form id="formQuarto" method="POST">
+      <div class="form-row">
+        <div class="form-group">
+          <label for="numero">Número do Quarto</label>
+          <input type="text" id="numero" name="numero" required>
+        </div>
+        <div class="form-group">
+          <label for="tipo">Tipo</label>
+          <select id="tipo" name="tipo" required>
+            <option value="Simples">Simples</option>
+            <option value="Duplo">Duplo</option>
+            <option value="Luxo">Luxo</option>
+            <option value="Suíte">Suíte</option>
+          </select>
+        </div>
+      </div>
+      
+      <div class="form-row">
+        <div class="form-group">
+          <label for="capacidade">Capacidade</label>
+          <input type="number" id="capacidade" name="capacidade" min="1" required>
+        </div>
+        <div class="form-group">
+          <label for="precoDiaria">Preço da Diária (R$)</label>
+          <input type="number" id="precoDiaria" name="precoDiaria" min="0" step="0.01" required>
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <label for="descricao">Descrição</label>
+        <textarea id="descricao" name="descricao" rows="3" required></textarea>
+      </div>
+      
+      <div class="form-group">
+        <label for="comodidades">Comodidades (separadas por vírgula)</label>
+        <input type="text" id="comodidades" name="comodidades" placeholder="Wi-Fi, Ar Condicionado, TV" required>
+      </div>
+      
+      <div class="form-group">
+        <label for="imagem">URL da Imagem</label>
+        <input type="text" id="imagem" name="imagem" placeholder="https://...">
+      </div>
+      
+      <div class="form-group">
+        <label for="status">Status</label>
+        <select id="status" name="status" required>
+          <option value="Disponível">Disponível</option>
+          <option value="Ocupado">Ocupado</option>
+          <option value="Manutenção">Manutenção</option>
+        </select>
+      </div>
+      
+      <div class="modal-footer">
+        <button type="button" class="btn-outline" onclick="fecharModal()">Cancelar</button>
+        <button type="submit" class="btn-primary">Salvar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  const quartos = <%- JSON.stringify(quartos) %>;
+  
+  function abrirModal() {
+    document.getElementById('modalQuarto').style.display = 'flex';
+    document.getElementById('modalTitle').textContent = 'Novo Quarto';
+    document.getElementById('formQuarto').action = '/admin/quartos';
+    document.getElementById('formQuarto').reset();
+  }
+  
+  function editarQuarto(_id) {
+    const quarto = quartos.find(q => q._id === _id);
+    if (!quarto) return;
+    
+    document.getElementById('modalQuarto').style.display = 'flex';
+    document.getElementById('modalTitle').textContent = 'Editar Quarto';
+    document.getElementById('formQuarto').action = `/admin/quartos/${_id}/editar`;
+    
+    document.getElementById('numero').value = quarto.numero;
+    document.getElementById('tipo').value = quarto.tipo;
+    document.getElementById('capacidade').value = quarto.capacidade;
+    document.getElementById('precoDiaria').value = quarto.precoDiaria;
+    document.getElementById('descricao').value = quarto.descricao;
+    document.getElementById('comodidades').value = quarto.comodidades.join(', ');
+    document.getElementById('imagem').value = quarto.imagem;
+    document.getElementById('status').value = quarto.status;
+  }
+  
+  function fecharModal() {
+    document.getElementById('modalQuarto').style.display = 'none';
+  }
+  
+  window.onclick = function(event) {
+    const modal = document.getElementById('modalQuarto');
+    if (event.target === modal) {
+      fecharModal();
+    }
+  }
+</script>
+
+<%- include('../partials/footer') %>

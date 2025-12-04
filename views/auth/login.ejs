@@ -1,0 +1,44 @@
+<%- include('../partials/header') %>
+
+<div class="auth-page">
+  <div class="auth-container">
+    <div class="auth-card">
+      <div class="auth-header">
+        <i class="fas fa-hotel"></i>
+        <h2>Login</h2>
+        <p>Entre com suas credenciais para acessar o sistema</p>
+      </div>
+      
+      <% if (error) { %>
+        <div class="alert alert-error">
+          <%= error %>
+        </div>
+      <% } %>
+      
+      <div class="alert alert-info">
+        <strong>Credenciais padrão:</strong><br>
+        Admin: admin@pousada.com / admin123
+      </div>
+      
+      <form action="/auth/login" method="POST" class="auth-form">
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input type="email" id="email" name="email" required placeholder="seu@email.com">
+        </div>
+        
+        <div class="form-group">
+          <label for="senha">Senha</label>
+          <input type="password" id="senha" name="senha" required placeholder="••••••••">
+        </div>
+        
+        <button type="submit" class="btn-primary btn-block">Entrar</button>
+      </form>
+      
+      <div class="auth-footer">
+        <p>Não tem uma conta? <a href="/auth/cadastro">Cadastre-se</a></p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%- include('../partials/footer') %>

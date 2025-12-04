@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %> - Pousada Paraíso</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+  <nav class="navbar">
+    <div class="container">
+      <div class="nav-brand">
+        <i class="fas fa-hotel"></i>
+        <a href="/">Pousada Paraíso</a>
+      </div>
+      <div class="nav-menu">
+        <a href="/" class="<%= page === 'home' ? 'active' : '' %>">Início</a>
+        <a href="/quartos" class="<%= page === 'quartos' ? 'active' : '' %>">Quartos</a>
+        
+        <% if (user) { %>
+          <% if (isAdmin) { %>
+            <a href="/admin" class="<%= page === 'admin' ? 'active' : '' %>">
+              <i class="fas fa-cog"></i> Painel Admin
+            </a>
+          <% } %>
+          <a href="/perfil" class="user-info <%= page === 'perfil' ? 'active' : '' %>">
+            <i class="fas fa-user"></i> <%= user.nome %>
+          </a>
+          <a href="/auth/logout" class="btn-logout">
+            <i class="fas fa-sign-out-alt"></i> Sair
+          </a>
+        <% } else { %>
+          <a href="/auth/login" class="btn-outline">Login</a>
+          <a href="/auth/cadastro" class="btn-primary">Cadastrar</a>
+        <% } %>
+      </div>
+    </div>
+  </nav>

@@ -1,0 +1,267 @@
+<%- include('../partials/header') %>
+
+<div class="reserva-page">
+  <div class="container">
+    <h1>Fazer Reserva</h1>
+    
+    <% if (error) { %>
+      <div class="alert alert-error">
+        <%= error %>
+      </div>
+    <% } %>
+    
+    <div class="reserva-grid">
+      <div class="quarto-info-card">
+        <h3>Quarto <%= quarto.numero %> - <%= quarto.tipo %></h3>
+        <img src="<%= quarto.imagem %>" alt="Quarto <%= quarto.numero %>">
+        <p><%= quarto.descricao %></p>
+        
+        <div class="info-detalhes">
+          <p><strong>Capacidade:</strong> <%= quarto.capacidade %> pessoas</p>
+          <p><strong>Diária:</strong> R$ <%= quarto.precoDiaria %></p>
+          <div>
+            <strong>Comodidades:</strong>
+            <ul>
+              <% quarto.comodidades.forEach(c => { %>
+                <li><%= c %></li>
+              <% }) %>
+            </ul>
+          </div>
+        </div>
+      </div>
+      
+      <div class="reserva-form-card">
+        <h3>Dados da Reserva</h3>
+        <form action="/reservas/nova/<%= quarto._id %>" method="POST" id="formReserva">
+          <div class="form-group"> 
+            <label for="nome">Nome Completo</label>
+            <input type="text" id="nome" name="nome" value="<%= hospede ? hospede.nome : '' %>" required>
+          </div>
+          
+          <div class="form-group">
+            <label for="cpf">CPF</label>
+            <input type="text" id="CPF" name="CPF" value="<%= (hospede && typeof hospede.CPF === 'string' && hospede.CPF.startsWith('PLACEHOLDER-')) ? '' : (hospede ? hospede.CPF : '') %>" required oninput="formatarCPF(this)">
+          </div>
+          
+          <div class="form-group">
+            <label for="telefone">Telefone</label>
+            <div class="phone-input">
+              <span id="flagTelefone" class="flag">🌐</span>
+              <input type="text" id="telefone" name="telefone" placeholder="(00) 00000-0000" value="<%= (hospede && typeof hospede.CPF === 'string' && hospede.CPF.startsWith('PLACEHOLDER-')) ? '' : (hospede ? hospede.telefone : '') %>" required oninput="formatarNumero(this)">
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label for="endereco">Endereço</label>
+            <input type="text" id="endereco" name="endereco" value="<%= hospede ? hospede.endereco : '' %>" required>
+          </div>
+          
+          <div class="form-group">
+            <label for="dataCheckIn">Data de Check-in</label>
+            <input type="date" id="dataCheckIn" name="dataCheckIn" required>
+          </div>
+          
+          <div class="form-group">
+            <label for="dataCheckOut">Data de Check-out</label>
+            <input type="date" id="dataCheckOut" name="dataCheckOut" required>
+          </div>
+          
+          <div class="form-group">
+            <label for="numeroHospedes">Número de Hóspedes</label>
+            <input type="number" id="numeroHospedes" name="numeroHospedes" min="1" max="<%= quarto.capacidade %>" value="1" required>
+          </div>
+          
+          <div class="form-group">
+            <label for="metodoPagamento">Método de Pagamento</label>
+            <select id="metodoPagamento" name="metodoPagamento" required>
+              <option value="">Selecione</option>
+              <option value="Dinheiro">Dinheiro</option>
+              <option value="Cartão de Crédito">Cartão de Crédito</option>
+              <option value="Cartão de Débito">Cartão de Débito</option>
+              <option value="PIX">PIX</option>
+            </select>
+          </div>
+          
+          <div class="resumo-valor">
+            <p><strong>Período:</strong> <span id="dias">0</span> dia(s)</p>
+            <p><strong>Valor por noite:</strong> R$ <%= quarto.precoDiaria %></p>
+            <p class="total"><strong>Total:</strong> R$ <span id="valorTotal">0.00</span></p>
+          </div>
+          
+          <button type="submit" class="btn-primary btn-block">Confirmar Reserva</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const precoDiaria = <%= quarto.precoDiaria %>;
+  const checkInInput = document.getElementById('dataCheckIn');
+  const checkOutInput = document.getElementById('dataCheckOut');
+  
+  // Definir data mínima como hoje
+  const hoje = new Date().toISOString().split('T')[0];
+  checkInInput.min = hoje;
+  
+  function calcularTotal() { 
+    const checkIn = new Date(checkInInput.value);
+    const checkOut = new Date(checkOutInput.value);
+    
+    if (checkIn && checkOut && checkOut > checkIn) {
+      const dias = Math.ceil((checkOut - checkIn) / (1000 * 60 * 60 * 24));
+      const total = dias * precoDiaria;
+      
+      document.getElementById('dias').textContent = dias;
+      document.getElementById('valorTotal').textContent = total.toFixed(2);
+      
+      checkOutInput.min = checkInInput.value;
+    }
+  }
+  
+  checkInInput.addEventListener('change', calcularTotal);
+  checkOutInput.addEventListener('change', calcularTotal);
+
+// Formatação de CPF
+  function formatarCPF(campo) {
+    let cpf = campo.value.replace(/\D/g, "");
+    if (cpf.length > 11) cpf = cpf.slice(0, 11);
+    cpf = cpf.replace(/(\d{3})(\d)/, "$1.$2");
+    cpf = cpf.replace(/(\d{3})(\d)/, "$1.$2");
+    cpf = cpf.replace(/(\d{3})(\d{1,2})$/, "$1-$2");
+    campo.value = cpf;
+  }
+
+// Formatação de Telefone e bandeira por código do país
+  (function(){
+    const callingCodeMap = {
+      '55': 'BR',
+      '1': 'US',
+      '44': 'GB',
+      '34': 'ES',
+      '33': 'FR',
+      '49': 'DE',
+      '39': 'IT',
+      '52': 'MX',
+      '91': 'IN',
+      '7': 'RU'
+    };
+
+    function countryToFlagEmoji(cc) {
+      if (!cc) return '🌐';
+      const A = 0x1F1E6;
+      return String.fromCodePoint(...cc.toUpperCase().split('').map(c => A + c.charCodeAt(0) - 65));
+    }
+
+    function detectCallingCode(digits) {
+      // check longest first
+      const codes = Object.keys(callingCodeMap).sort((a,b)=>b.length-a.length);
+      for (const code of codes) {
+        if (digits.startsWith(code)) return code;
+      }
+      return null;
+    }
+
+    window.formatarNumero = function(input){
+      if (!input) return;
+      let v = input.value || '';
+      const raw = v.replace(/\D/g, '');
+      let digits = raw;
+
+      // remove leading zeros (00 or 000)
+      if (digits.startsWith('00')) digits = digits.replace(/^00/, '');
+
+      const code = detectCallingCode(digits);
+      const flagEl = document.getElementById('flagTelefone');
+      if (code && callingCodeMap[code]) {
+        flagEl.textContent = countryToFlagEmoji(callingCodeMap[code]);
+      } else {
+        flagEl.textContent = '🌐';
+      }
+
+      // Brasil (55)
+      if (code === '55') {
+        let nd = digits.slice(2); // extrair após o 55 para formatar
+        
+        if (nd.length === 0) { 
+          input.value = '+55'; 
+          return; 
+        }
+        if (nd.length <= 2) { 
+          input.value = `+55 ${nd}`; 
+          return; 
+        }
+        if (nd.length <= 7) { 
+          // +55 (XX) XXXXX
+          input.value = `+55 (${nd.slice(0,2)}) ${nd.slice(2)}`; 
+          return; 
+        }
+        // +55 (XX) XXXXX-XXXX (para 8+ dígitos)
+        input.value = `+55 (${nd.slice(0,2)}) ${nd.slice(2,7)}-${nd.slice(7)}`; 
+        return;
+      }
+
+      // US/Canada (1)
+      if (code === '1') {
+        let nd = digits.slice(1); // remove '1'
+        if (nd.length === 0) { input.value = ''; return; }
+        if (nd.length <= 3) { input.value = nd; return; }
+        if (nd.length <= 6) { input.value = `(${nd.slice(0,3)}) ${nd.slice(3)}`; return; }
+        input.value = `(${nd.slice(0,3)}) ${nd.slice(3,6)}-${nd.slice(6,10)}`;
+        return;
+      }
+
+      // outros códigos: +XX XXXXX
+      if (code) {
+        const rest = digits.slice(code.length);
+        if (rest.length === 0) { 
+          input.value = `+${code}`; 
+          return; 
+        }
+        if (rest.length <= 3) { 
+          input.value = `+${code} ${rest}`; 
+          return; 
+        }
+        if (rest.length <= 6) { 
+          input.value = `+${code} ${rest.slice(0,3)} ${rest.slice(3)}`; 
+          return; 
+        }
+        input.value = `+${code} ${rest.slice(0,3)} ${rest.slice(3,6)} ${rest.slice(6,10)}`;
+        return;
+      }
+
+      // sem código identificado: agrupa em 3-4 dígitos
+      if (digits.length <= 3) { 
+        input.value = digits; 
+        return; 
+      }
+      if (digits.length <= 6) { 
+        input.value = `${digits.slice(0,3)} ${digits.slice(3)}`; 
+        return; 
+      }
+      input.value = `${digits.slice(0,3)} ${digits.slice(3,6)} ${digits.slice(6,10)}`;
+    };
+
+    // helper para setar bandeira em elementos display
+    window.setPhoneFlag = function(number, flagElementId){
+      if (!number) return;
+      const digits = (number + '').replace(/\D/g, '').replace(/^00+/, '');
+      const code = detectCallingCode(digits);
+      const flagEl = document.getElementById(flagElementId) || document.getElementById('flagTelefone');
+      if (!flagEl) return;
+      if (code && callingCodeMap[code]) flagEl.textContent = countryToFlagEmoji(callingCodeMap[code]);
+      else flagEl.textContent = '🌐';
+    };
+  })();
+
+  // set flag on page load if telefone exists
+  (function(){
+    try {
+      const telEl = document.getElementById('telefone');
+      if (telEl && telEl.value) setPhoneFlag(telEl.value, 'flagTelefone');
+    } catch(e){}
+  })();
+
+</script>
+
+<%- include('../partials/footer') %>

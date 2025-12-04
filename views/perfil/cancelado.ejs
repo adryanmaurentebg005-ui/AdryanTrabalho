@@ -1,0 +1,66 @@
+<%- include('../partials/header') %>
+
+<div class="sucesso-page">
+  <div class="container">
+    <div class="sucesso-card">
+      <div class="sucesso-icon">
+        <i class="fas fa-check-circle"></i>
+      </div>
+      <h1>Reserva Cancelada!</h1>
+      <p>Sua reserva foi cancelada com sucesso.</p>
+      
+      <div class="detalhes-reserva">
+        <h3>Detalhes da Reserva</h3>
+        
+        <div class="detalhes-grid">
+          <div class="detalhe-item">
+            <strong>Número da Reserva:</strong>
+            <p><%= reserva._id.toString().slice(0, 8) %></p>
+          </div>
+          
+          <div class="detalhe-item"> 
+            <strong>Hóspede:</strong>
+            <p><%= hospede.nome %></p>
+          </div>
+          
+          <div class="detalhe-item">
+            <strong>Quarto:</strong>
+            <p>Quarto <%= quarto.numero %> - <%= quarto.tipo %></p>
+          </div>
+          
+          <div class="detalhe-item">
+            <strong>Check-in:</strong>
+            <p><%= new Date(reserva.checkIn).toLocaleDateString('pt-BR') %></p>
+          </div>
+          
+          <div class="detalhe-item">
+            <strong>Check-out:</strong>
+            <p><%= new Date(reserva.checkOut).toLocaleDateString('pt-BR') %></p>
+          </div>
+          
+          <div class="detalhe-item">
+            <strong>Hóspedes:</strong>
+            <p><%= reserva.numeroHospedes %> pessoa(s)</p>
+          </div>
+          
+          <div class="detalhe-item">
+            <strong>Método de Pagamento:</strong>
+            <p><%= pagamento.metodoPagamento %></p>
+          </div>
+          
+          <div class="detalhe-item total-destaque">
+            <strong>Valor Total:</strong>
+            <p>R$ <%= reserva.total.toFixed(2) %></p>
+          </div>
+        </div>
+      </div>
+      
+      <div class="sucesso-acoes">
+        <a href="/" class="btn-outline">Voltar ao Início</a>
+        <a href="/quartos" class="btn-primary">Ver Mais Quartos</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%- include('../partials/footer') %>

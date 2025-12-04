@@ -1,0 +1,22 @@
+<aside class="admin-sidebar">
+  <h2>Painel Administrativo</h2>
+  <nav class="admin-nav">
+    <a href="/admin" class="<%= page === 'admin' && !title.includes('Gerenciar') ? 'active' : '' %>">
+      <i class="fas fa-tachometer-alt"></i> Dashboard
+    </a>
+    <a href="/admin/hospedes" class="<%= title.includes('Hóspedes') ? 'active' : '' %>">
+      <i class="fas fa-users"></i> Hóspedes
+    </a>
+    <a href="/admin/quartos" class="<%= title.includes('Quartos') && title.includes('Gerenciar') ? 'active' : '' %>">
+      <i class="fas fa-bed"></i> Quartos
+    </a>
+    <a href="/admin/reservas" class="<%= title.includes('Reservas') && title.includes('Gerenciar') ? 'active' : '' %>">
+      <i class="fas fa-calendar"></i> Reservas
+    </a>
+    <a href="/admin/pagamentos" class="<%= title.includes('Pagamentos') ? 'active' : '' %>">
+      <i class="fas fa-dollar-sign"></i> Pagamentos
+    </a>
+  </nav>
+</aside>
+
+<script src="/js/phone-format.js"></script>

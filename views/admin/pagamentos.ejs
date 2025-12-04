@@ -1,0 +1,139 @@
+<%- include('../partials/header') %>
+
+<div class="admin-layout">
+  <%- include('sidebar') %>
+  
+  <div class="admin-content">
+    <h1>Gerenciar Pagamentos</h1>
+    
+    <div class="stats-row">
+      <div class="stat-small">
+        <p>Total Aprovado</p>
+        <h3 class="text-green">R$ <%= totais.aprovado.toFixed(2) %></h3>
+      </div>
+      <div class="stat-small">
+        <p>Total Pendente</p>
+        <h3 class="text-yellow">R$ <%= totais.pendente.toFixed(2) %></h3>
+      </div>
+      <div class="stat-small">
+        <p>Total Geral</p>
+        <h3>R$ <%= totais.total.toFixed(2) %></h3>
+      </div>
+    </div>
+    
+    <div class="table-container">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Hóspede</th>
+            <th>Valor</th>
+            <th>Método</th>
+            <th>Data</th>
+            <th>Status</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% if (pagamentos.length === 0) { %>
+            <tr>
+              <td colspan="7" class="text-center">Nenhum pagamento encontrado</td>
+            </tr>
+          <% } else { %>
+            <% pagamentos.forEach(pagamento => { %>
+              <tr>
+                <td><%= pagamento._id.toString().slice(0, 8) %></td>
+                <td><%= pagamento.hospede ? pagamento.hospede.nome : 'N/A' %></td>
+                <td>R$ <%= pagamento.valor.toFixed(2) %></td>
+                <td><%= pagamento.metodo %></td>
+                <td><%= new Date(pagamento.dataPagamento).toLocaleDateString('pt-BR') %></td>
+                <td>
+                  <form action="/admin/pagamentos/<%= pagamento._id %>/status" method="POST" style="display:inline;">
+                    <select name="status" onchange="this.form.submit()" class="select-inline">
+                      <option value="Pendente" <%= pagamento.status === 'Pendente' ? 'selected' : '' %>>Pendente</option>
+                      <option value="Aprovado" <%= pagamento.status === 'Aprovado' ? 'selected' : '' %>>Aprovado</option>
+                      <option value="Recusado" <%= pagamento.status === 'Recusado' ? 'selected' : '' %>>Recusado</option>
+                    </select>
+                  </form>
+                </td>
+                <td class="acoes">
+                  <button class="btn-icon" onclick="verDetalhes('<%= pagamento._id %>')">
+                    <i class="fas fa-eye"></i>
+                  </button>
+                  <form action="/admin/pagamentos/<%= pagamento._id %>/deletar" method="POST" style="display:inline;" onsubmit="return confirm('Tem certeza?')">
+                    <button type="submit" class="btn-icon btn-danger">
+                      <i class="fas fa-trash"></i>
+                    </button>
+                  </form>
+                </td>
+              </tr>
+            <% }) %>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Detalhes -->
+<div id="modalDetalhes" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>Detalhes do Pagamento</h3>
+      <button class="modal-close" onclick="fecharModal()">&times;</button>
+    </div>
+    <div id="detalhesContent" class="detalhes-content"></div>
+  </div>
+</div>
+
+<script>
+  const pagamentos = <%- JSON.stringify(pagamentos) %>;
+  
+  function verDetalhes(_id) {
+    const pagamento = pagamentos.find(p => p._id === _id);
+    if (!pagamento) return;
+    
+    const content = `
+      <div class="detalhe-item">
+        <strong>ID do Pagamento:</strong>
+        <p>#${pagamento._id}</p>
+      </div>
+      <div class="detalhe-item">
+        <strong>Hóspede:</strong>
+        <p>${pagamento.hospede ? pagamento.hospede.nome : 'N/A'}</p>
+      </div>
+      <div class="detalhe-item">
+        <strong>Valor:</strong>
+        <p class="text-large">R$ ${pagamento.valor.toFixed(2)}</p>
+      </div>
+      <div class="detalhe-item">
+        <strong>Método de Pagamento:</strong>
+        <p>${pagamento.metodo}</p>
+      </div>
+      <div class="detalhe-item">
+        <strong>Data do Pagamento:</strong>
+        <p>${new Date(pagamento.dataPagamento).toLocaleString('pt-BR')}</p>
+      </div>
+      <div class="detalhe-item">
+        <strong>Status:</strong>
+        <p><span class="badge">${pagamento.status}</span></p>
+      </div>
+    `;
+    
+    document.getElementById('detalhesContent').innerHTML = content;
+    document.getElementById('modalDetalhes').style.display = 'flex';
+  }
+  
+  function fecharModal() {
+    document.getElementById('modalDetalhes').style.display = 'none';
+  }
+  
+  window.onclick = function(event) {
+    const modal = document.getElementById('modalDetalhes');
+    if (event.target === modal) {
+      fecharModal();
+    }
+  }
+</script>
+
+<%- include('../partials/footer') %>

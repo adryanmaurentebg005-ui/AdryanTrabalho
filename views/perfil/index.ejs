@@ -1,0 +1,425 @@
+<%- include('../partials/header') %>
+
+<div class="perfil-page">
+  <div class="container">
+    <div class="perfil-header">
+      <div>
+        <h1>Meu Perfil</h1>
+        <p>Gerencie suas informações e reservas</p>
+      </div>
+      <a href="/perfil/configuracoes" class="btn-settings">
+        <i class="fas fa-cog"></i> Configurações
+      </a>
+    </div>
+    
+    <% 
+      const urlParams = new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '');
+      const successParam = urlParams.get('success');
+      const errorParam = urlParams.get('error');
+    %>
+    
+    <% if (typeof success === 'string' && success) { %>
+      <div class="alert alert-success">
+        <%= success %>
+      </div>
+    <% } %>
+    
+    <% if (typeof error === 'string' && error) { %>
+      <div class="alert alert-error">
+        <%= error %>
+      </div>
+    <% } %>
+    
+    <div class="perfil-grid">
+      <div class="perfil-card">
+        <div class="card-header-perfil">
+          <h2><i class="fas fa-user-circle"></i> Informações Pessoais</h2>
+          <button class="btn-icon" onclick="abrirModalPerfil()">
+            <i class="fas fa-edit"></i>
+          </button>
+        </div>
+
+        <div class="perfil-foto-container">
+  <img 
+    src="<%= hospede.fotoBase64 ? hospede.fotoBase64 : '/img/default-pfp.png' %>" 
+    alt="Foto de Perfil"
+    class="perfil-foto">
+</div>
+
+        <div class="info-grid">
+          <div class="info-item">
+            <label>Nome Completo</label>
+            <p><%= user.nome %></p>
+          </div>
+          
+          <div class="info-item">
+            <label>Email</label>
+            <p><%= user.email %></p>
+          </div>
+          
+          <% if (hospede) { %>
+            <div class="info-item">
+              <label>CPF</label>
+              <p><%= (hospede && typeof hospede.CPF === 'string' && hospede.CPF.startsWith('PLACEHOLDER-')) ? 'Não informado' : (hospede && hospede.CPF ? hospede.CPF : 'Não informado') %></p>
+            </div>
+            
+            <div class="info-item">
+              <label>Telefone</label>
+              <p><span id="flagTelefoneDisplay">🌐</span> <span id="telefoneDisplay"><%= hospede.telefone || 'Não informado' %></span></p>
+            </div>
+            
+            <div class="info-item">
+              <label>Endereço</label>
+              <p><%= hospede.endereco || 'Não informado' %></p>
+            </div>
+            
+            <div class="info-item">
+              <label>Data de Nascimento</label>
+              <p><%= hospede.dataNascimento ? new Date(hospede.dataNascimento).toLocaleDateString('pt-BR') : 'Não informado' %></p>
+            </div>
+          <% } %>
+          
+          <div class="info-item">
+            <label>Membro desde</label>
+            <p><%= new Date(hospede.dataCadastro).toLocaleDateString('pt-BR') %></p>
+          </div>
+          
+          <div class="info-item">
+            <label>Tipo de Conta</label>
+            <p><span class="badge-tipo <%= user.tipo %>"><%= user.tipo === 'admin' ? 'Administrador' : 'Cliente' %></span></p>
+          </div>
+        </div>
+      </div>
+      
+      <div class="reservas-section">
+        <h2><i class="fas fa-calendar-check"></i> Minhas Reservas</h2>
+        
+        <% if (reservas.length === 0) { %>
+          <div class="empty-state">
+            <i class="fas fa-calendar-times"></i>
+            <p>Você ainda não tem nenhuma reserva</p>
+            <a href="/quartos" class="btn-primary">Ver Quartos Disponíveis</a>
+          </div>
+        <% } else { %>
+          <div class="reservas-list">
+            <% reservas.forEach(reserva => { %>
+              <div class="reserva-card-perfil">
+                <div class="reserva-header-perfil">
+                  <div>
+                    <h3>Quarto <%= reserva.quarto ? reserva.quarto.numero : 'N/A' %> - <%= reserva.quarto ? reserva.quarto.tipo : 'N/A' %></h3>
+                    <p class="reserva-id">#<%= reserva._id.toString().slice(0, 8) %></p>
+                  </div>
+                  <span class="badge-status-reserva status-<%= reserva.status.toLowerCase() %>">
+                    <%= reserva.status %>
+                  </span>
+                </div>
+                 
+                <div class="reserva-info-grid">
+                  <div class="reserva-info-item">
+                    <i class="fas fa-calendar-alt"></i>
+                    <div>
+                      <label>Check-in</label>
+                      <p><%= new Date(reserva.checkIn).toLocaleDateString('pt-BR') %></p>
+                    </div>
+                  </div>
+                  
+                  <div class="reserva-info-item">
+                    <i class="fas fa-calendar-alt"></i>
+                    <div>
+                      <label>Check-out</label>
+                      <p><%= new Date(reserva.checkOut).toLocaleDateString('pt-BR') %></p>
+                    </div>
+                  </div>
+                  
+                  <div class="reserva-info-item">
+                    <i class="fas fa-users"></i>
+                    <div>
+                      <label>Hóspedes</label>
+                      <p><%= reserva.numeroHospedes %> pessoa(s)</p>
+                    </div>
+                  </div>
+                  
+                  <div class="reserva-info-item">
+                    <i class="fas fa-dollar-sign"></i>
+                    <div>
+                      <label>Valor Total</label>
+                      <p class="valor-destaque">R$ <%= reserva.total.toFixed(2) %></p>
+                    </div>
+                  </div>
+                  
+                  <% if (reserva.pagamento) { %>
+                    <div class="reserva-info-item">
+                      <i class="fas fa-credit-card"></i>
+                      <div>
+                        <label>Pagamento</label>
+                        <p><%= reserva.pagamento.metodoPagamento %></p>
+                        <span class="badge-pagamento <%= reserva.pagamento.status.toLowerCase() %>">
+                          <%= reserva.pagamento.status %>
+                        </span>
+                      </div>
+                    </div>
+                  <% } %>
+                </div>
+                
+                <% if (reserva.status === 'Confirmada' || reserva.status === 'Pendente') { %>
+                  <div class="reserva-acoes">
+                    <form action="/perfil/<%= reserva._id %>/cancelar-reserva" method="POST" onsubmit="return confirm('Tem certeza que deseja cancelar esta reserva?')">
+                      <button type="submit" class="btn-cancel">
+                        <i class="fas fa-times-circle"></i> Cancelar Reserva
+                      </button>
+                    </form>
+                  </div>
+                <% } %>
+              </div>
+            <% }) %>
+          </div>
+        <% } %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Editar Perfil -->
+<div id="modalPerfil" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 id="modalTitle">Editar Perfil</h3>
+      <button class="modal-close" onclick="fecharModalPerfil()">&times;</button>
+    </div>
+    <form id="formPerfil" action="/perfil/atualizar" method="POST">
+      <div class="form-group">
+        <label for="nome">Nome Completo</label>
+        <input type="text" id="nome" name="nome" required>
+      </div>
+
+      <div class="form-group">
+        <label for="CPF">CPF</label>
+        <input type="text" id="CPF" name="CPF" required oninput="formatarCPF(this)">
+      </div>
+
+      <div class="form-group">
+        <label for="telefone">Telefone</label>
+        <div class="phone-input">
+          <span id="flagTelefoneModal" class="flag">🌐</span>
+          <input type="text" id="telefone" name="telefone" placeholder="(00) 00000-0000" oninput="formatarNumero(this)">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="endereco">Endereço</label>
+        <input type="text" id="endereco" name="endereco">
+      </div>
+
+      <div class="form-group">
+        <label for="dataNascimento">Data de Nascimento</label>
+        <input type="date" id="dataNascimento" name="dataNascimento">
+      </div>
+
+      <div class="form-group foto-perfil-group">
+        <label>Foto de Perfil</label>
+        <div class="foto-preview">
+          <img id="fotoPreview"
+               src="<%= user.fotoBase64 ? user.fotoBase64 : '/img/default-pfp.png' %>"
+               alt="Foto de Perfil">
+        </div>
+        <input type="file" id="foto" name="foto" accept="image/*" onchange="previewFoto(event)">
+        <input type="hidden" id="fotoBase64" name="fotoBase64" value="<%= user.fotoBase64 || '' %>">
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn-outline" onclick="fecharModalPerfil()">Cancelar</button>
+        <button type="submit" class="btn-primary">Salvar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  const user = <%- JSON.stringify(user) %>;
+  const hospede = <%- JSON.stringify(hospede) %>;
+
+  // Abre modal preenchido com os dados atuais
+  function abrirModalPerfil() {
+    document.getElementById('modalPerfil').style.display = 'flex';
+
+    document.getElementById('nome').value = user.nome || '';
+    document.getElementById('CPF').value = (hospede && typeof hospede.CPF === 'string' && hospede.CPF.startsWith('PLACEHOLDER-')) ? '' : (hospede?.CPF || '');
+    document.getElementById('telefone').value = hospede?.telefone || '';
+    // formatar e mostrar bandeira no modal
+    formatarNumero(document.getElementById('telefone'));
+    document.getElementById('endereco').value = hospede?.endereco || '';
+    document.getElementById('dataNascimento').value = hospede?.dataNascimento
+      ? new Date(hospede.dataNascimento).toISOString().split('T')[0]
+      : '';
+
+    document.getElementById('fotoPreview').src = user.fotoBase64 || '/img/default-pfp.png';
+    document.getElementById('fotoBase64').value = user.fotoBase64 || '';
+  }
+
+  function fecharModalPerfil() {
+    document.getElementById('modalPerfil').style.display = 'none';
+  }
+
+  window.onclick = function(event) {
+    const modal = document.getElementById('modalPerfil');
+    if (event.target === modal) fecharModalPerfil();
+  };
+
+  // Pré-visualização da nova foto
+  function previewFoto(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const base64 = e.target.result;
+      document.getElementById('fotoPreview').src = base64;
+      document.getElementById('fotoBase64').value = base64;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  // Formatação de CPF
+  function formatarCPF(campo) {
+    let cpf = campo.value.replace(/\D/g, "");
+    if (cpf.length > 11) cpf = cpf.slice(0, 11);
+    cpf = cpf.replace(/(\d{3})(\d)/, "$1.$2");
+    cpf = cpf.replace(/(\d{3})(\d)/, "$1.$2");
+    cpf = cpf.replace(/(\d{3})(\d{1,2})$/, "$1-$2");
+    campo.value = cpf;
+  }
+
+// Formatação de Telefone e bandeira (mesma lógica usada em reservas)
+  (function(){
+    const callingCodeMap = {
+      '55': 'BR',
+      '1': 'US',
+      '44': 'GB',
+      '34': 'ES',
+      '33': 'FR',
+      '49': 'DE',
+      '39': 'IT',
+      '52': 'MX',
+      '91': 'IN',
+      '7': 'RU'
+    };
+
+    function countryToFlagEmoji(cc) {
+      if (!cc) return '🌐';
+      const A = 0x1F1E6;
+      return String.fromCodePoint(...cc.toUpperCase().split('').map(c => A + c.charCodeAt(0) - 65));
+    }
+
+    function detectCallingCode(digits) {
+      const codes = Object.keys(callingCodeMap).sort((a,b)=>b.length-a.length);
+      for (const code of codes) {
+        if (digits.startsWith(code)) return code;
+      }
+      return null;
+    }
+
+    window.formatarNumero = function(input){
+      if (!input) return;
+      let v = input.value || '';
+      const raw = v.replace(/\D/g, '');
+      let digits = raw;
+      
+      // remove leading zeros (00 or 000)
+      if (digits.startsWith('00')) digits = digits.replace(/^00/, '');
+
+      const code = detectCallingCode(digits);
+      const flagEl = document.getElementById('flagTelefoneModal') || document.getElementById('flagTelefone') || { textContent: '' };
+      if (code && callingCodeMap[code]) {
+        flagEl.textContent = countryToFlagEmoji(callingCodeMap[code]);
+      } else {
+        flagEl.textContent = '🌐';
+      }
+
+      // Brasil (55)
+      if (code === '55') {
+        let nd = digits.slice(2); // extrair após o 55 para formatar
+        
+        if (nd.length === 0) { 
+          input.value = '+55'; 
+          return; 
+        }
+        if (nd.length <= 2) { 
+          input.value = `+55 ${nd}`; 
+          return; 
+        }
+        if (nd.length <= 7) { 
+          // +55 (XX) XXXXX
+          input.value = `+55 (${nd.slice(0,2)}) ${nd.slice(2)}`; 
+          return; 
+        }
+        // +55 (XX) XXXXX-XXXX (para 8+ dígitos)
+        input.value = `+55 (${nd.slice(0,2)}) ${nd.slice(2,7)}-${nd.slice(7)}`; 
+        return;
+      }
+
+      // US/Canada (1)
+      if (code === '1') {
+        let nd = digits.slice(1); // remove '1'
+        if (nd.length === 0) { input.value = ''; return; }
+        if (nd.length <= 3) { input.value = nd; return; }
+        if (nd.length <= 6) { input.value = `(${nd.slice(0,3)}) ${nd.slice(3)}`; return; }
+        input.value = `(${nd.slice(0,3)}) ${nd.slice(3,6)}-${nd.slice(6,10)}`;
+        return;
+      }
+
+      // outros códigos: +XX XXXXX
+      if (code) {
+        const rest = digits.slice(code.length);
+        if (rest.length === 0) { 
+          input.value = `+${code}`; 
+          return; 
+        }
+        if (rest.length <= 3) { 
+          input.value = `+${code} ${rest}`; 
+          return; 
+        }
+        if (rest.length <= 6) { 
+          input.value = `+${code} ${rest.slice(0,3)} ${rest.slice(3)}`; 
+          return; 
+        }
+        input.value = `+${code} ${rest.slice(0,3)} ${rest.slice(3,6)} ${rest.slice(6,10)}`;
+        return;
+      }
+
+      // sem código identificado: agrupa em 3-4 dígitos
+      if (digits.length <= 3) { 
+        input.value = digits; 
+        return; 
+      }
+      if (digits.length <= 6) { 
+        input.value = `${digits.slice(0,3)} ${digits.slice(3)}`; 
+        return; 
+      }
+      input.value = `${digits.slice(0,3)} ${digits.slice(3,6)} ${digits.slice(6,10)}`;
+    };
+
+    // helper para setar bandeira em elementos display
+    window.setPhoneFlag = function(number, flagElementId){
+      if (!number) return;
+      const digits = (number + '').replace(/\D/g, '').replace(/^00+/, '');
+      const code = detectCallingCode(digits);
+      const flagEl = document.getElementById(flagElementId);
+      if (!flagEl) return;
+      if (code && callingCodeMap[code]) flagEl.textContent = countryToFlagEmoji(callingCodeMap[code]);
+      else flagEl.textContent = '🌐';
+    };
+
+  })();
+</script>
+
+<script>
+  (function(){
+    try {
+      if (typeof hospede !== 'undefined' && hospede && hospede.telefone) {
+        setPhoneFlag(hospede.telefone, 'flagTelefoneDisplay');
+      }
+    } catch (e) { /* ignore */ }
+  })();
+</script>
+
+<%- include('../partials/footer') %>

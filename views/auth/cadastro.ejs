@@ -1,0 +1,55 @@
+<%- include('../partials/header') %>
+
+<div class="auth-page">
+  <div class="auth-container">
+    <div class="auth-card">
+      <div class="auth-header">
+        <i class="fas fa-hotel"></i>
+        <h2>Cadastro</h2>
+        <p>Crie sua conta para fazer reservas</p>
+      </div>
+      
+      <% if (error) { %>
+        <div class="alert alert-error">
+          <%= error %>
+        </div>
+      <% } %>
+      
+      <% if (success) { %>
+        <div class="alert alert-success">
+          <%= success %>
+        </div>
+      <% } %>
+      
+      <form action="/auth/cadastro" method="POST" class="auth-form">
+        <div class="form-group">
+          <label for="nome">Nome Completo</label>
+          <input type="text" id="nome" name="nome" required placeholder="Seu nome">
+        </div>
+        
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input type="email" id="email" name="email" required placeholder="seu@email.com">
+        </div>
+        
+        <div class="form-group">
+          <label for="senha">Senha</label>
+          <input type="password" id="senha" name="senha" required placeholder="••••••••">
+        </div>
+        
+        <div class="form-group">
+          <label for="confirmarSenha">Confirmar Senha</label>
+          <input type="password" id="confirmarSenha" name="confirmarSenha" required placeholder="••••••••">
+        </div>
+        
+        <button type="submit" class="btn-primary btn-block">Cadastrar</button>
+      </form>
+      
+      <div class="auth-footer">
+        <p>Já tem uma conta? <a href="/auth/login">Faça login</a></p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%- include('../partials/footer') %>
