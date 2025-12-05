@@ -7,3 +7,4 @@
     font-src 'self' data:;
     connect-src *;
     frame-src *;
+  Set-Cookie: connect.sid
