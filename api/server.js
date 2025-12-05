@@ -3,11 +3,11 @@ import session from 'express-session';
 import bodyParser from 'body-parser';
 import methodOverride from 'method-override';
 import multer from 'multer';
+import MongoStore from 'connect-mongo';
 
 import path, { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
 
-// Corrigir caminhos
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
@@ -21,45 +21,55 @@ const PORT = process.env.PORT || 3001;
 app.set('view engine', 'ejs');
 app.set('views', join(__dirname, '../views'));
 
-// Servir arquivos estáticos
 app.use(express.static(join(__dirname, '../public')));
 
-// Body parsers
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
-
-// Method override (?_method=DELETE)
 app.use(methodOverride('_method'));
 
-// Session
-app.use(session({
-  secret: 'pousada-secret-key-2024',
-  resave: false,
-  saveUninitialized: false,
-  cookie: { maxAge: 24 * 60 * 60 * 1000 }
-}));
+/* ------------------------------
+      SESSION FIX VERCEL
+--------------------------------*/
 
-// Variáveis globais para views
+const isProd = process.env.NODE_ENV === 'production';
+
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET || 'dev-secret',
+    resave: false,
+    saveUninitialized: false,
+
+    store: MongoStore.create({
+      mongoUrl: process.env.MONGO_URL,
+      ttl: 60 * 60 * 24 // 1 dia
+    }),
+
+    cookie: {
+      maxAge: 24 * 60 * 60 * 1000, // 1 dia
+      httpOnly: true,
+      secure: isProd,        // Vercel = true | Local = false
+      sameSite: isProd ? 'none' : 'lax' // Vercel exige none
+    }
+  })
+);
+
+/* ------------------------------
+   VARIÁVEIS GLOBAIS PARA VIEWS
+--------------------------------*/
 app.use((req, res, next) => {
   res.locals.user = req.session.user || null;
-  res.locals.isAdmin = req.session.user && req.session.user.tipo === 'admin';
+  res.locals.isAdmin = req.session.user?.tipo === 'admin';
   next();
 });
 
 /* ------------------------------
-     MULTER (uploads)
+         MULTER
 --------------------------------*/
 const storage = multer.memoryStorage();
-const upload = multer({ storage });
+export const upload = multer({ storage });
 
 /* ------------------------------
-       MODELS (caso tenha)
---------------------------------*/
-// import X from '../models/X.js';
-// import Y from '../models/Y.js';
-
-/* ------------------------------
-           ROTAS
+            ROTAS
 --------------------------------*/
 import indexRoutes from '../routes/index.js';
 import authRoutes from '../routes/auth.js';
@@ -76,13 +86,12 @@ app.use('/admin', adminRoutes);
 app.use('/perfil', perfilRoutes);
 
 /* ------------------------------
-     INICIAR SERVIDOR LOCAL
+     RODAR LOCALMENTE
 --------------------------------*/
-app.listen(PORT, () => {
-  console.log(`Servidor rodando em http://localhost:${PORT}`);
-});
+if (!isProd) {
+  app.listen(PORT, () => {
+    console.log(`Servidor rodando em http://localhost:${PORT}`);
+  });
+}
 
-/* ------------------------------
-     EXPORT PARA VERCEL
---------------------------------*/
 export default app;
