@@ -4,7 +4,6 @@ import bodyParser from 'body-parser';
 import methodOverride from 'method-override';
 import multer from 'multer';
 import MongoStore from 'connect-mongo';
-
 import path, { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
 
@@ -17,20 +16,19 @@ const PORT = process.env.PORT || 3001;
 /* ------------------------------
    CONFIGURAÇÕES PRINCIPAIS
 --------------------------------*/
-
 app.set('view engine', 'ejs');
 app.set('views', join(__dirname, '../views'));
-
 app.use(express.static(join(__dirname, '../public')));
-
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(methodOverride('_method'));
 
+// Vercel roda atrás de proxy HTTPS
+app.set('trust proxy', 1);
+
 /* ------------------------------
       SESSION FIX VERCEL
 --------------------------------*/
-
 const isProd = process.env.NODE_ENV === 'production';
 
 app.use(
@@ -38,17 +36,15 @@ app.use(
     secret: process.env.SESSION_SECRET || 'dev-secret',
     resave: false,
     saveUninitialized: false,
-
     store: MongoStore.create({
-      mongoUrl: "mongodb+srv://aluno:123@cluster0.ddqnr3p.mongodb.net/pousada?retryWrites=true&w=majority&appName=Cluster0",
+      mongoUrl: process.env.MONGO_URL || "mongodb+srv://aluno:123@cluster0.ddqnr3p.mongodb.net/pousada?retryWrites=true&w=majority",
       ttl: 60 * 60 * 24 // 1 dia
     }),
-
     cookie: {
       maxAge: 24 * 60 * 60 * 1000, // 1 dia
       httpOnly: true,
-      secure: isProd,        // Vercel = true | Local = false
-      sameSite: isProd ? 'none' : 'lax' // Vercel exige none
+      secure: isProd,               // HTTPS em produção
+      sameSite: isProd ? 'none' : 'lax'
     }
   })
 );
