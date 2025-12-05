@@ -40,7 +40,7 @@ app.use(
     saveUninitialized: false,
 
     store: MongoStore.create({
-      mongoUrl: process.env.MONGO_URL,
+      mongoUrl: "mongodb+srv://aluno:123@cluster0.ddqnr3p.mongodb.net/pousada?retryWrites=true&w=majority&appName=Cluster0""",
       ttl: 60 * 60 * 24 // 1 dia
     }),
 
